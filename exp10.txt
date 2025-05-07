@@ -1,0 +1,95 @@
+ #include <GL/glut.h>
+ #include <iostream>
+ #include <cmath>
+ float angle = 0; // Rotation angle
+ float scaleX = 1, scaleY = 1; // Scaling factors
+ float reflectX = 1, reflectY = 1; // Reflection factors
+ float centerX = 200, centerY = 200; // Arbitrary point for rotation
+ // Coordinates of the object (e.g., a square)
+ float obj[4][2] = {
+ {100, 100}, {300, 100}, {300, 300}, {100, 300} // Square vertices
+ };
+ // Function to draw the object
+ void drawObject() {
+ glBegin(GL_POLYGON);
+ for (int i = 0; i < 4; i++) {
+ glVertex2f(obj[i][0], obj[i][1]);
+ }
+ glEnd();
+ }
+ // Function to apply scaling transformation
+ void scaleObject() {
+ for (int i = 0; i < 4; i++) {
+ obj[i][0] *= scaleX; // Scale X coordinate
+ obj[i][1] *= scaleY; // Scale Y coordinate
+ }
+}
+ // Function to apply rotation about an arbitrary point
+ void rotateObject() {
+ float tempX, tempY;
+ float rad = angle * M_PI / 180.0f; // Convert angle to radians
+ float cosA = cos(rad);
+ float sinA = sin(rad);
+ for (int i = 0; i < 4; i++) {
+ // Translate object to origin
+ tempX = obj[i][0]- centerX;
+ tempY = obj[i][1]- centerY;
+ // Apply rotation
+ obj[i][0] = centerX + (tempX * cosA- tempY * sinA);
+ obj[i][1] = centerY + (tempX * sinA + tempY * cosA);
+ }
+ }
+ // Function to apply reflection over X and Y axes
+ void reflectObject() {
+ for (int i = 0; i < 4; i++) {
+ obj[i][0] *= reflectX; // Reflect X coordinate
+ obj[i][1] *= reflectY; // Reflect Y coordinate
+ }
+ }
+ // Function to handle keyboard inputs for transformations
+ void keyboard(unsigned char key, int x, int y) {
+ if (key == 's') {
+ scaleX = 1.5; scaleY = 1.5; // Scale by a factor of 1.5
+ scaleObject();
+ } else if (key == 'r') {
+ angle += 10; // Rotate by 10 degrees
+ rotateObject();
+ } else if (key == 'f') {
+ reflectX =-1; // Reflect over the X-axis
+ reflectY = 1;
+ reflectObject();
+ } else if (key == 'F') {
+ reflectX = 1; // Reset reflection to no reflection
+ reflectY = 1;
+ reflectObject();
+ } else if (key == 'q') {
+ exit(0); // Quit on 'q'
+ }
+ glutPostRedisplay(); // Refresh the display
+ }
+// Function to display the object and apply transformations
+ void display() {
+ glClear(GL_COLOR_BUFFER_BIT);
+ glColor3f(0.0, 1.0, 0.0); // Green color for object
+ drawObject(); // Draw the transformed object
+ glFlush();
+ }
+ // Initialization function
+ void init() {
+ glClearColor(1.0, 1.0, 1.0, 1.0); // Set background color to white
+ glColor3f(0.0, 0.0, 0.0); // Set drawing color to black
+ glPointSize(2);
+ glMatrixMode(GL_PROJECTION);
+ gluOrtho2D(0, 800, 0, 800); // Set up the projection matrix (2D)
+ }
+ int main(int argc, char** argv) {
+ glutInit(&argc, argv);
+ glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+ glutInitWindowSize(800, 800);
+ glutCreateWindow("2D Transformations");
+ init();
+ glutDisplayFunc(display);
+ glutKeyboardFunc(keyboard);
+ glutMainLoop();
+ return 0;
+ }
